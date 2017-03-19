@@ -14,7 +14,7 @@ gradle -b download-current.gradle
 # Clean directories for better diff
 rm -r build/styles/META-INF
 rm -r build/locales/META-INF
-find styles -mindepth 1 ! -name '*.csl' -delete
+find styles -mindepth 1 ! -name '*.csl' ! -name 'dependent' -delete
 find locales -mindepth 1 ! -name 'locales-*.xml' -delete
 
 set +e
