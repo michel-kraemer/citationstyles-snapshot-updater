@@ -1,0 +1,157 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+version = '1.0.1-SNAPSHOT'
+group = 'org.citationstyles'
+
+def addContributor(contributor, contributors) {
+    def name = contributor.name.text()
+    def email = contributor.email.text()
+    def uri = contributor.uri.text()
+    if (contributors.containsKey(name)) {
+        if (contributors[name].email.isEmpty() && !email.isEmpty()) {
+            contributors[name].email = email
+        }
+        if (contributors[name].url.isEmpty() && !uri.isEmpty()) {
+            contributors[name].url = uri
+        }
+    } else {
+        contributors[name] = [
+            name: name,
+            email: email,
+            url: uri
+        ]
+    }
+}
+
+def makeContributors(pom) {
+    def contributorsmap = [:]
+
+    def files = jar.inputs.files.files
+    for (file in files) {
+        if (!file.name.toLowerCase().endsWith('.csl')) {
+            continue
+        }
+        
+        def csl = new XmlSlurper().parse(file)
+        def cslauthors = csl.info.author
+        def cslcontributors = csl.info.contributor
+        for (author in cslauthors) {
+            addContributor(author, contributorsmap)
+        }
+        for (contributor in cslcontributors) {
+            addContributor(contributor, contributorsmap)
+        }
+    }
+    
+    def contributorslist = contributorsmap.values().sort { a, b ->
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase())
+    }
+    
+    pom.project {
+        contributors {
+            for (c in contributorslist) {
+                contributor {
+                    name = c.name
+                    if (!c.email.isEmpty()) email = c.email
+                    if (!c.url.isEmpty()) url = c.url
+                }
+            }
+        }
+    }
+}
+
+jar {
+    // include styles
+    from fileTree(dir: '.', includes: [ '*.csl', 'dependent/*.csl' ])
+}
+
+// create a dummy javadoc jar file
+task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
+
+// create a dummy source jar file
+task packageSources(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+// define artifacts for upload
+artifacts {
+    archives jar
+    archives packageJavadoc
+    archives packageSources
+}
+
+// sign all artifacts
+signing {
+    required { !version.endsWith('-SNAPSHOT') && gradle.taskGraph.hasTask(uploadArchives) }
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            // sign artifacts before upload
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            
+            // upload to sonatype OSS
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
+                authentication(userName: this.hasProperty('sonatypeUsername') ? sonatypeUsername : '',
+                    password: this.hasProperty('sonatypePassword') ? sonatypePassword : '')
+            }
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+                authentication(userName: this.hasProperty('sonatypeUsername') ? sonatypeUsername : '',
+                    password: this.hasProperty('sonatypePassword') ? sonatypePassword : '')
+            }
+            
+            // pom file details
+            pom.project {
+               name 'Citation Style Language (CSL) citation styles'
+               packaging 'jar'
+               description 'Citation Style Language (CSL) citation styles packaged as a Maven artifact'
+               url 'http://citationstyles.org/'
+ 
+               scm {
+                   url 'https://github.com/citation-style-language/styles'
+                   connection 'scm:git:git://github.com/citation-style-language/styles.git'
+                   developerConnection 'scm:git:git://github.com/michel-kraemer/styles.git'
+               }
+ 
+               licenses {
+                   license {
+                       name 'Creative Commons Attribution-ShareAlike 3.0 Unported license'
+                       url 'https://creativecommons.org/licenses/by-sa/3.0/'
+                       distribution 'repo'
+                       comments '''\
+                           All the styles in this repository are released under the Creative
+                           Commons Attribution-ShareAlike 3.0 Unported license. For attribution,
+                           any software using CSL styles from this repository must include a clear
+                           mention of the CSL project and a link to CitationStyles.org. When
+                           distributing these styles, the listings of authors and contributors in
+                           the style metadata must be kept as is.'''.stripIndent()
+                   }
+               }
+               
+               organization {
+                   name 'CitationStyles.org'
+                   url 'http://citationstyles.org/'
+               }
+ 
+               developers {
+                   developer {
+                       id 'michel-kraemer'
+                       name 'Michel Kraemer'
+                       email 'michel@undercouch.de'
+                       url 'https://www.michel-kraemer.com'
+                   }
+               }
+           }
+           
+           makeContributors(pom)
+        }
+    }
+}

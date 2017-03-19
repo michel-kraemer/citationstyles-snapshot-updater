@@ -1,0 +1,41 @@
+repositories {
+    maven {
+        url 'https://oss.sonatype.org/content/groups/public'
+    }
+}
+
+configurations {
+    styles
+    locales
+}
+
+dependencies {
+    styles 'org.citationstyles:styles:1.0.1-SNAPSHOT'
+    locales 'org.citationstyles:locales:1.0.1-SNAPSHOT'
+}
+
+configurations.all {
+    // always download snapshots
+    resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds'
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+task extractStyles(type: Sync) {
+    dependsOn configurations.styles
+    from {
+        configurations.styles.collect { zipTree(it) }
+    }
+    into "$buildDir/styles/"
+}
+
+task extractLocales(type: Sync) {
+    dependsOn configurations.locales
+    from {
+        configurations.locales.collect { zipTree(it) }
+    }
+    into "$buildDir/locales/"
+}
+
+task extractAll(dependsOn: [extractStyles, extractLocales])
+
+defaultTasks 'extractAll'
