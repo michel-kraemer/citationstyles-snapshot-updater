@@ -2,6 +2,8 @@
 
 set -e
 
+export TERM=dumb
+
 # Download current snapshots
 gradle -b download-current.gradle
 
