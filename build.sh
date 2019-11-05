@@ -4,14 +4,16 @@ set -e
 
 export TERM=dumb
 
+rm -rf styles locales
+
 # Download current snapshots
 gradle -b download-current.gradle
 
 # Clone newest styles
-[[ -d styles ]] || git clone https://github.com/citation-style-language/styles.git
+[[ -d styles ]] || git clone --depth 1 https://github.com/citation-style-language/styles.git
 
 # Clone newest locales
-[[ -d locales ]] || git clone https://github.com/citation-style-language/locales.git
+[[ -d locales ]] || git clone --depth 1 https://github.com/citation-style-language/locales.git
 
 # Clean directories for better diff
 rm -r build/styles/META-INF

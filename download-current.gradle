@@ -10,8 +10,8 @@ configurations {
 }
 
 dependencies {
-    styles 'org.citationstyles:styles:1.0.1-SNAPSHOT'
-    locales 'org.citationstyles:locales:1.0.1-SNAPSHOT'
+    styles 'org.citationstyles:styles:2.0.1-SNAPSHOT'
+    locales 'org.citationstyles:locales:2.0.1-SNAPSHOT'
 }
 
 configurations.all {
