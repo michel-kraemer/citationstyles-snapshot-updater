@@ -5,6 +5,6 @@ repository. The artifacts are mainly meant to be used together with
 
 The build script is executed daily. Results can be viewed here:
 
-https://travis-ci.org/michel-kraemer/citationstyles-snapshot-updater
+https://github.com/michel-kraemer/citationstyles-snapshot-updater/actions
 
-[![Build Status](https://travis-ci.org/michel-kraemer/citationstyles-snapshot-updater.svg?branch=master)](https://travis-ci.org/michel-kraemer/citationstyles-snapshot-updater)
+[![Actions Status](https://github.com/michel-kraemer/citationstyles-snapshot-updater/workflows/build/badge.svg)](https://github.com/michel-kraemer/citationstyles-snapshot-updater/actions)
