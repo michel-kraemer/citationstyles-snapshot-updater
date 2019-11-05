@@ -7,4 +7,4 @@ The build script is executed daily. Results can be viewed here:
 
 https://github.com/michel-kraemer/citationstyles-snapshot-updater/actions
 
-[![Actions Status](https://github.com/michel-kraemer/citationstyles-snapshot-updater/workflows/build/badge.svg)](https://github.com/michel-kraemer/citationstyles-snapshot-updater/actions)
+[![Actions Status](https://github.com/michel-kraemer/citationstyles-snapshot-updater/workflows/CI/badge.svg)](https://github.com/michel-kraemer/citationstyles-snapshot-updater/actions)
