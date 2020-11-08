@@ -2,7 +2,11 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-version = '20.11'
+def today = LocalDate.now()
+def month = today.getMonthValue()
+def year = today.getYear() - 2000
+
+version = "$year.$month-SNAPSHOT"
 group = 'org.citationstyles'
 
 def addContributor(contributor, contributors) {
