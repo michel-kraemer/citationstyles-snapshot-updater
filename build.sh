@@ -39,7 +39,7 @@ fi
 
 echo "Comparing locales ..."
 diff -qr build/locales/ locales/
-if [ ! "$?" -eq "0" ] || [ $(date +%d) -eq 6 ]; then
+if [ ! "$?" -eq "0" ] || [ $(date +%d) -eq 1 ]; then
   set -e
   echo "Publishing new locales ..."
   cp build-locales-template.gradle locales/build.gradle
