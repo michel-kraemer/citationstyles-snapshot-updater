@@ -25,7 +25,7 @@ set +e
 
 echo "Comparing styles ..."
 diff -qr build/styles/ styles/
-if [ ! "$?" -eq "0" ]; then
+if [ ! "$?" -eq "0" ] || [ $(date +%d) -eq 1 ]; then
   set -e
   echo "Publishing new styles ..."
   cp build-styles-template.gradle styles/build.gradle
@@ -39,7 +39,7 @@ fi
 
 echo "Comparing locales ..."
 diff -qr build/locales/ locales/
-if [ ! "$?" -eq "0" ]; then
+if [ ! "$?" -eq "0" ] || [ $(date +%d) -eq 6 ]; then
   set -e
   echo "Publishing new locales ..."
   cp build-locales-template.gradle locales/build.gradle

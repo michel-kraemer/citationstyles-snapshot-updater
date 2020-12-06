@@ -12,7 +12,7 @@ configurations {
 def today = LocalDate.now()
 def month = today.getMonthValue()
 def year = today.getYear() - 2000
-if (today.getDayOfMonth() == 1) {
+if (today.getDayOfMonth() == 6) {
     month--
     if (month == 0) {
         year--
