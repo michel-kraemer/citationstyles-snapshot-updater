@@ -49,7 +49,7 @@ if [ "$RELEASE" == "true" ] || [ ! "$localesdiff" -eq "0" ] || [ $(date +%d) -eq
   set -e
   echo "Publishing new locales ..."
   cp build-locales-template.gradle locales/build.gradle
-  test -f "gradle.properties" && cp gradle.properties styles
+  test -f "gradle.properties" && cp gradle.properties locales
   cd locales
   gradle upload
   test -f "gradle.properties" && rm gradle.properties
