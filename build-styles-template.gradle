@@ -6,8 +6,13 @@ def today = LocalDate.now()
 def month = today.getMonthValue()
 def year = today.getYear() - 2000
 
-version = "$year.$month-SNAPSHOT"
+def isRelease = Boolean.parseBoolean(System.getenv("RELEASE"))
+
 group = 'org.citationstyles'
+version = "$year.$month"
+if (!isRelease) {
+    version += "-SNAPSHOT"
+}
 
 def addContributor(contributor, contributors) {
     def name = contributor.name.text()
