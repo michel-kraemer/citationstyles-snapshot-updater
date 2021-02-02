@@ -31,8 +31,10 @@ if [ "$RELEASE" == "true" ] || [ ! "$?" -eq "0" ] || [ $(date +%d) -eq 1 ]; then
   set -e
   echo "Publishing new styles ..."
   cp build-styles-template.gradle styles/build.gradle
+  test -f "gradle.properties" && cp gradle.properties styles
   cd styles
   gradle upload
+  test -f "gradle.properties" && rm gradle.properties
   cd ..
   set +e
 else
@@ -41,12 +43,14 @@ fi
 
 echo "Comparing locales ..."
 diff -qr build/locales/ locales/
-if [ ! "$?" -eq "0" ] || [ $(date +%d) -eq 1 ]; then
+if [ "$RELEASE" == "true" ] || [ ! "$?" -eq "0" ] || [ $(date +%d) -eq 1 ]; then
   set -e
   echo "Publishing new locales ..."
   cp build-locales-template.gradle locales/build.gradle
+  test -f "gradle.properties" && cp gradle.properties styles
   cd locales
   gradle upload
+  test -f "gradle.properties" && rm gradle.properties
   cd ..
   set +e
 else
