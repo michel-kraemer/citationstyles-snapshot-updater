@@ -27,7 +27,8 @@ set +e
 
 echo "Comparing styles ..."
 diff -qr build/styles/ styles/
-if [ "$RELEASE" == "true" ] || [ ! "$?" -eq "0" ] || [ $(date +%d) -eq 1 ]; then
+stylesdiff=$?
+if [ "$RELEASE" == "true" ] || [ ! "$stylesdiff" -eq "0" ] || [ $(date +%d) -eq 1 ]; then
   set -e
   echo "Publishing new styles ..."
   cp build-styles-template.gradle styles/build.gradle
@@ -43,7 +44,8 @@ fi
 
 echo "Comparing locales ..."
 diff -qr build/locales/ locales/
-if [ "$RELEASE" == "true" ] || [ ! "$?" -eq "0" ] || [ $(date +%d) -eq 1 ]; then
+localesdiff=$?
+if [ "$RELEASE" == "true" ] || [ ! "$localesdiff" -eq "0" ] || [ $(date +%d) -eq 1 ]; then
   set -e
   echo "Publishing new locales ..."
   cp build-locales-template.gradle locales/build.gradle
