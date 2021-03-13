@@ -1,6 +1,10 @@
+import org.gradle.util.VersionNumber
+
+def sonatypeRepoUrl = 'https://oss.sonatype.org/content/groups/public'
+
 repositories {
     maven {
-        url 'https://oss.sonatype.org/content/groups/public'
+        url sonatypeRepoUrl
     }
 }
 
@@ -9,20 +13,24 @@ configurations {
     locales
 }
 
-def today = LocalDate.now()
-def month = today.getMonthValue()
-def year = today.getYear() - 2000
-if (today.getDayOfMonth() == 1) {
-    month--
-    if (month == 0) {
-        year--
-        month = 12
-    }
+def localesMetadataUrl = "$sonatypeRepoUrl/org/citationstyles/locales/maven-metadata.xml"
+def stylesMetadataUrl = "$sonatypeRepoUrl/org/citationstyles/styles/maven-metadata.xml"
+
+def getLatestSnapshot(url) {
+    def metadata = new XmlSlurper().parseText(new URL(url).text)
+    def snapshots = metadata.versioning.versions.'*'.findAll { it.text().endsWith("-SNAPSHOT") }
+    def snapshotVersions = snapshots.collect { [VersionNumber.parse(it.text()), it.text()] }
+    def latest = snapshotVersions.sort { a, b-> b[0] <=> a[0] }[0]
+    return latest[1]
 }
 
+// get lastest snapshot versions
+def latestStylesSnapshot = getLatestSnapshot(stylesMetadataUrl)
+def latestLocalesSnapshot = getLatestSnapshot(localesMetadataUrl)
+
 dependencies {
-    styles "org.citationstyles:styles:$year.$month-SNAPSHOT"
-    locales "org.citationstyles:locales:$year.$month-SNAPSHOT"
+    styles "org.citationstyles:styles:$latestStylesSnapshot"
+    locales "org.citationstyles:locales:$latestLocalesSnapshot"
 }
 
 configurations.all {

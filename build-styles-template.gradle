@@ -155,7 +155,7 @@ uploadArchives {
                        id 'michel-kraemer'
                        name 'Michel Kraemer'
                        email 'michel@undercouch.de'
-                       url 'https://www.michel-kraemer.com'
+                       url 'https://michelkraemer.com'
                    }
                }
            }
