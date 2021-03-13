@@ -1,0 +1,23 @@
+{
+  "name": "citationstyles-snapshot-updater",
+  "version": "21.3.0",
+  "description": "Citation Styles Snapshot Updater",
+  "private": true,
+  "main": "build.js",
+  "scripts": {
+    "build": "./build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michel-kraemer/citationstyles-snapshot-updater.git"
+  },
+  "author": "Michel Kraemer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/michel-kraemer/citationstyles-snapshot-updater/issues"
+  },
+  "homepage": "https://github.com/michel-kraemer/citationstyles-snapshot-updater#readme",
+  "dependencies": {
+    "shelljs": "^0.8.4"
+  }
+}

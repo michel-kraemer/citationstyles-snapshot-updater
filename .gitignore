@@ -1,4 +1,6 @@
 .gradle/
 build/
 locales/
+node_modules/
 styles
+gradle.properties
