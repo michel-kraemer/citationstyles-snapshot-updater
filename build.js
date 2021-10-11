@@ -7,11 +7,13 @@ const path = require("path")
 const RELEASE = !!process.env["RELEASE"]
 const firstDayOfMonth = new Date().getDate() === 1
 
+const GRADLE_EXECUTABLE = `"${__dirname}/gradlew"`
+
 rm("-rf", ["locales", "styles"])
 
 // Download current snapshots
 if (!RELEASE) {
-  if (exec("gradle -b download-current.gradle").code !== 0) {
+  if (exec(`${GRADLE_EXECUTABLE} -b download-current.gradle`).code !== 0) {
     exit(1)
   }
 }
@@ -46,7 +48,7 @@ if (RELEASE || stylesdiff !== 0 || firstDayOfMonth) {
     cp("gradle.properties", "styles")
   }
   pushd("-q", "styles")
-  if (exec("gradle upload").code !== 0) {
+  if (exec(`${GRADLE_EXECUTABLE} upload`).code !== 0) {
     exit(1)
   }
   if (fs.existsSync("gradle.properties")) {
@@ -66,7 +68,7 @@ if (RELEASE || localesdiff !== 0 || firstDayOfMonth) {
     cp("gradle.properties", "locales")
   }
   pushd("-q", "locales")
-  if (exec("gradle upload").code !== 0) {
+  if (exec(`${GRADLE_EXECUTABLE} upload`).code !== 0) {
     exit(1)
   }
   if (fs.existsSync("gradle.properties")) {
