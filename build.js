@@ -48,7 +48,7 @@ if (RELEASE || stylesdiff !== 0 || firstDayOfMonth) {
     cp("gradle.properties", "styles")
   }
   pushd("-q", "styles")
-  if (exec(`${GRADLE_EXECUTABLE} upload`).code !== 0) {
+  if (exec(`${GRADLE_EXECUTABLE} publishToSonatype closeAndReleaseSonatypeStagingRepository`).code !== 0) {
     exit(1)
   }
   if (fs.existsSync("gradle.properties")) {
@@ -68,7 +68,7 @@ if (RELEASE || localesdiff !== 0 || firstDayOfMonth) {
     cp("gradle.properties", "locales")
   }
   pushd("-q", "locales")
-  if (exec(`${GRADLE_EXECUTABLE} upload`).code !== 0) {
+  if (exec(`${GRADLE_EXECUTABLE} publishToSonatype closeAndReleaseSonatypeStagingRepository`).code !== 0) {
     exit(1)
   }
   if (fs.existsSync("gradle.properties")) {

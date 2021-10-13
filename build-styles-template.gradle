@@ -1,5 +1,9 @@
-apply plugin: 'java'
-apply plugin: 'maven'
+plugins {
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+}
+
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 def today = LocalDate.now()
@@ -15,9 +19,9 @@ if (!isRelease) {
 }
 
 def addContributor(contributor, contributors) {
-    def name = contributor.name.text()
-    def email = contributor.email.text()
-    def uri = contributor.uri.text()
+    def name = contributor.name.text().trim()
+    def email = contributor.email.text().trim()
+    def uri = contributor.uri.text().trim()
     if (contributors.containsKey(name)) {
         if (contributors[name].email.isEmpty() && !email.isEmpty()) {
             contributors[name].email = email
@@ -34,7 +38,7 @@ def addContributor(contributor, contributors) {
     }
 }
 
-def makeContributors(pom) {
+def makeContributors() {
     def contributorsmap = [:]
 
     def files = jar.inputs.files.files
@@ -42,7 +46,7 @@ def makeContributors(pom) {
         if (!file.name.toLowerCase().endsWith('.csl')) {
             continue
         }
-        
+
         def csl = new XmlSlurper().parse(file)
         def cslauthors = csl.info.author
         def cslcontributors = csl.info.contributor
@@ -53,21 +57,9 @@ def makeContributors(pom) {
             addContributor(contributor, contributorsmap)
         }
     }
-    
-    def contributorslist = contributorsmap.values().sort { a, b ->
+
+    return contributorsmap.values().sort { a, b ->
       return a.name.toLowerCase().compareTo(b.name.toLowerCase())
-    }
-    
-    pom.project {
-        contributors {
-            for (c in contributorslist) {
-                contributor {
-                    name = c.name
-                    if (!c.email.isEmpty()) email = c.email
-                    if (!c.url.isEmpty()) url = c.url
-                }
-            }
-        }
     }
 }
 
@@ -76,91 +68,81 @@ jar {
     from fileTree(dir: '.', includes: [ '*.csl', 'dependent/*.csl' ])
 }
 
-// create a dummy javadoc jar file
-task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
-    from javadoc.destinationDir
-    classifier = 'javadoc'
-}
+def contributorsList = makeContributors()
 
-// create a dummy source jar file
-task packageSources(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
 
-// define artifacts for upload
-artifacts {
-    archives jar
-    archives packageJavadoc
-    archives packageSources
+            pom {
+                name = 'Citation Style Language (CSL) citation styles'
+                packaging = 'jar'
+                description = 'Citation Style Language (CSL) citation styles packaged as a Maven artifact'
+                url = 'https://citationstyles.org/'
+
+                scm {
+                    url = 'https://github.com/citation-style-language/styles'
+                    connection = 'scm:git:git://github.com/citation-style-language/styles.git'
+                    developerConnection = 'scm:git:git://github.com/citation-style-language/styles.git'
+                }
+
+                licenses {
+                    license {
+                        name = 'Creative Commons Attribution-ShareAlike 3.0 Unported license'
+                        url = 'https://creativecommons.org/licenses/by-sa/3.0/'
+                        distribution = 'repo'
+                        comments = '''\
+                            All the styles in this repository are released under the Creative
+                            Commons Attribution-ShareAlike 3.0 Unported license. For attribution,
+                            any software using CSL styles from this repository must include a clear
+                            mention of the CSL project and a link to CitationStyles.org. When
+                            distributing these styles, the listings of authors and contributors in
+                            the style metadata must be kept as is.'''.stripIndent()
+                    }
+                }
+
+                organization {
+                    name = 'CitationStyles.org'
+                    url = 'https://citationstyles.org/'
+                }
+ 
+                developers {
+                    developer {
+                        id = 'michel-kraemer'
+                        name = 'Michel Kraemer'
+                        email = 'michel@undercouch.de'
+                        url = 'https://michelkraemer.com'
+                    }
+                }
+
+                contributors {
+                    for (c in contributorsList) {
+                        contributor {
+                            name = c.name
+                            if (!c.email.isEmpty()) email = c.email
+                            if (!c.url.isEmpty()) url = c.url
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // sign all artifacts
 signing {
-    required { !version.endsWith('-SNAPSHOT') && gradle.taskGraph.hasTask(uploadArchives) }
-    sign configurations.archives
+    useGpgCmd()
+    sign publishing.publications.mavenJava
 }
 
-uploadArchives {
+tasks.withType(Sign) {
+    // only sign release artifacts and not snapshots
+    onlyIf { isRelease }
+}
+
+nexusPublishing {
     repositories {
-        mavenDeployer {
-            // sign artifacts before upload
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-            
-            // upload to sonatype OSS
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
-                authentication(userName: this.hasProperty('sonatypeUsername') ? sonatypeUsername : '',
-                    password: this.hasProperty('sonatypePassword') ? sonatypePassword : '')
-            }
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
-                authentication(userName: this.hasProperty('sonatypeUsername') ? sonatypeUsername : '',
-                    password: this.hasProperty('sonatypePassword') ? sonatypePassword : '')
-            }
-            
-            // pom file details
-            pom.project {
-               name 'Citation Style Language (CSL) citation styles'
-               packaging 'jar'
-               description 'Citation Style Language (CSL) citation styles packaged as a Maven artifact'
-               url 'http://citationstyles.org/'
- 
-               scm {
-                   url 'https://github.com/citation-style-language/styles'
-                   connection 'scm:git:git://github.com/citation-style-language/styles.git'
-                   developerConnection 'scm:git:git://github.com/michel-kraemer/styles.git'
-               }
- 
-               licenses {
-                   license {
-                       name 'Creative Commons Attribution-ShareAlike 3.0 Unported license'
-                       url 'https://creativecommons.org/licenses/by-sa/3.0/'
-                       distribution 'repo'
-                       comments '''\
-                           All the styles in this repository are released under the Creative
-                           Commons Attribution-ShareAlike 3.0 Unported license. For attribution,
-                           any software using CSL styles from this repository must include a clear
-                           mention of the CSL project and a link to CitationStyles.org. When
-                           distributing these styles, the listings of authors and contributors in
-                           the style metadata must be kept as is.'''.stripIndent()
-                   }
-               }
-               
-               organization {
-                   name 'CitationStyles.org'
-                   url 'http://citationstyles.org/'
-               }
- 
-               developers {
-                   developer {
-                       id 'michel-kraemer'
-                       name 'Michel Kraemer'
-                       email 'michel@undercouch.de'
-                       url 'https://michelkraemer.com'
-                   }
-               }
-           }
-           
-           makeContributors(pom)
-        }
+        sonatype()
     }
 }

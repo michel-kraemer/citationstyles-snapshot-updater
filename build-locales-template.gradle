@@ -1,5 +1,9 @@
-apply plugin: 'java'
-apply plugin: 'maven'
+plugins {
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+}
+
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 def today = LocalDate.now()
@@ -19,66 +23,29 @@ jar {
     from fileTree(dir: '.', includes: [ 'locales-*.xml' ])
 }
 
-// create a dummy javadoc jar file
-task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
-    from javadoc.destinationDir
-    classifier = 'javadoc'
-}
-
-// create a dummy source jar file
-task packageSources(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
-
-// define artifacts for upload
-artifacts {
-    archives jar
-    archives packageJavadoc
-    archives packageSources
-}
-
-// sign all artifacts
-signing {
-    required { !version.endsWith('-SNAPSHOT') && gradle.taskGraph.hasTask(uploadArchives) }
-    sign configurations.archives
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            // sign artifacts before upload
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
             
-            // upload to sonatype OSS
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
-                authentication(userName: this.hasProperty('sonatypeUsername') ? sonatypeUsername : '',
-                    password: this.hasProperty('sonatypePassword') ? sonatypePassword : '')
-            }
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
-                authentication(userName: this.hasProperty('sonatypeUsername') ? sonatypeUsername : '',
-                    password: this.hasProperty('sonatypePassword') ? sonatypePassword : '')
-            }
-            
-            // pom file details
-            pom.project {
-               name 'Citation Style Language (CSL) locale files'
-               packaging 'jar'
-               description 'Citation Style Language (CSL) locale files packaged as a Maven artifact'
-               url 'http://citationstyles.org/'
+            pom {
+               name = 'Citation Style Language (CSL) locale files'
+               packaging = 'jar'
+               description = 'Citation Style Language (CSL) locale files packaged as a Maven artifact'
+               url = 'https://citationstyles.org/'
  
                scm {
-                   url 'https://github.com/citation-style-language/locales'
-                   connection 'scm:git:git://github.com/citation-style-language/locales.git'
-                   developerConnection 'scm:git:git://github.com/michel-kraemer/locales.git'
+                   url = 'https://github.com/citation-style-language/locales'
+                   connection = 'scm:git:git://github.com/citation-style-language/locales.git'
+                   developerConnection = 'scm:git:git://github.com/citation-style-language/locales.git'
                }
  
                licenses {
                    license {
-                       name 'Creative Commons Attribution-ShareAlike 3.0 Unported license'
-                       url 'https://creativecommons.org/licenses/by-sa/3.0/'
-                       distribution 'repo'
-                       comments '''\
+                       name = 'Creative Commons Attribution-ShareAlike 3.0 Unported license'
+                       url = 'https://creativecommons.org/licenses/by-sa/3.0/'
+                       distribution = 'repo'
+                       comments = '''\
                            All the styles in this repository are released under the Creative
                            Commons Attribution-ShareAlike 3.0 Unported license. For attribution,
                            any software using CSL styles from this repository must include a clear
@@ -89,19 +56,36 @@ uploadArchives {
                }
                
                organization {
-                   name 'CitationStyles.org'
-                   url 'http://citationstyles.org/'
+                   name = 'CitationStyles.org'
+                   url = 'https://citationstyles.org/'
                }
  
                developers {
                    developer {
-                       id 'michel-kraemer'
-                       name 'Michel Kraemer'
-                       email 'michel@undercouch.de'
-                       url 'https://michelkraemer.com'
+                       id = 'michel-kraemer'
+                       name = 'Michel Kraemer'
+                       email = 'michel@undercouch.de'
+                       url = 'https://michelkraemer.com'
                    }
                }
            }
         }
+    }
+}
+
+// sign all artifacts
+signing {
+    useGpgCmd()
+    sign publishing.publications.mavenJava
+}
+
+tasks.withType(Sign) {
+    // only sign release artifacts and not snapshots
+    onlyIf { isRelease }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype()
     }
 }
