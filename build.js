@@ -44,15 +44,9 @@ let stylesdiff = exec("diff -qr build/styles/ styles/").code
 if (RELEASE || stylesdiff !== 0 || firstDayOfMonth) {
   console.log("Publishing new styles ...")
   cp("build-styles-template.gradle", "styles/build.gradle")
-  if (fs.existsSync("gradle.properties")) {
-    cp("gradle.properties", "styles")
-  }
   pushd("-q", "styles")
   if (exec(`${GRADLE_EXECUTABLE} publishToSonatype closeAndReleaseSonatypeStagingRepository`).code !== 0) {
     exit(1)
-  }
-  if (fs.existsSync("gradle.properties")) {
-    rm("gradle.properties")
   }
   popd("-q")
 } else {
@@ -64,15 +58,9 @@ let localesdiff = exec("diff -qr build/locales/ locales/").code
 if (RELEASE || localesdiff !== 0 || firstDayOfMonth) {
   console.log("Publishing new locales ...")
   cp("build-locales-template.gradle", "locales/build.gradle")
-  if (fs.existsSync("gradle.properties")) {
-    cp("gradle.properties", "locales")
-  }
   pushd("-q", "locales")
   if (exec(`${GRADLE_EXECUTABLE} publishToSonatype closeAndReleaseSonatypeStagingRepository`).code !== 0) {
     exit(1)
-  }
-  if (fs.existsSync("gradle.properties")) {
-    rm("gradle.properties")
   }
   popd("-q")
 } else {
