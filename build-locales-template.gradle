@@ -16,7 +16,7 @@ def year = today.getYear() - 2000
 def isRelease = Boolean.parseBoolean(System.getenv("RELEASE"))
 
 group = 'org.citationstyles'
-version = "$year.$month"
+version = "$year.$month.1"
 if (!isRelease) {
     version += "-SNAPSHOT"
 }
