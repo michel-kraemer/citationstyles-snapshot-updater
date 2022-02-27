@@ -6,6 +6,9 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
+sourceCompatibility = 8
+targetCompatibility = 8
+
 def today = LocalDate.now()
 def month = today.getMonthValue()
 def year = today.getYear() - 2000
