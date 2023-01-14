@@ -19,5 +19,8 @@
   "homepage": "https://github.com/michel-kraemer/citationstyles-snapshot-updater#readme",
   "dependencies": {
     "shelljs": "^0.8.5"
+  },
+  "devDependencies": {
+    "npm-check-updates": "^16.6.2"
   }
 }
