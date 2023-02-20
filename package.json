@@ -21,6 +21,6 @@
     "shelljs": "^0.8.5"
   },
   "devDependencies": {
-    "npm-check-updates": "^16.6.2"
+    "npm-check-updates": "^16.7.5"
   }
 }
