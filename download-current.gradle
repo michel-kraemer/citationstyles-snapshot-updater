@@ -1,6 +1,6 @@
 import org.gradle.util.VersionNumber
 
-def sonatypeRepoUrl = 'https://oss.sonatype.org/content/groups/public'
+def sonatypeRepoUrl = 'https://central.sonatype.com/repository/maven-snapshots'
 
 repositories {
     maven {
