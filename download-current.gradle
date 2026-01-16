@@ -20,7 +20,7 @@ def getLatestSnapshot(url) {
     def metadata = new XmlSlurper().parseText(new URL(url).text)
     def snapshots = metadata.versioning.versions.'*'.findAll { it.text().endsWith("-SNAPSHOT") }
     def snapshotVersions = snapshots.collect { [VersionNumber.parse(it.text()), it.text()] }
-    def latest = snapshotVersions.sort { a, b-> b[0] <=> a[0] }[0]
+    def latest = snapshotVersions.sort { a, b -> b[0] <=> a[0] }[0]
     return latest[1]
 }
 
@@ -44,7 +44,7 @@ task extractStyles(type: Sync) {
     from {
         configurations.styles.collect { zipTree(it) }
     }
-    into "$buildDir/styles/"
+    into "$buildDir/styles-snapshot/"
 }
 
 task extractLocales(type: Sync) {
@@ -52,7 +52,7 @@ task extractLocales(type: Sync) {
     from {
         configurations.locales.collect { zipTree(it) }
     }
-    into "$buildDir/locales/"
+    into "$buildDir/locales-snapshot/"
 }
 
 task extractAll(dependsOn: [extractStyles, extractLocales])
