@@ -2,6 +2,7 @@
 
 const { cp, exit, exec, find, mkdir, rm, touch } = require("shelljs")
 const path = require("path")
+const fs = require("fs")
 
 const RELEASE = !!process.env["RELEASE"]
 const firstDayOfMonth = new Date().getDate() === 1
@@ -52,9 +53,15 @@ if (exec("git pull --ff-only", { cwd: "locales" }).code !== 0) {
 // Remove directories for better diff
 rm("-rf", ["build/locales-snapshot/META-INF", "build/styles-snapshot/META-INF"])
 
-// Make temporary copy of styles and locales in build directory
-cp("-r", "styles", "build/styles-release")
-cp("-r", "locales", "build/locales-release")
+// Make temporary copy of styles and locales in build directory. The trailing
+// slash is important, so only the files will be copied and not the directory
+// itself!
+if (exec("cp -r styles/ build/styles-release").code !== 0) {
+  exit(1)
+}
+if (exec("cp -r locales/ build/locales-release").code !== 0) {
+  exit(1)
+}
 
 // Only keep files that should be included in the distribution
 let stylesFilesToDelete = find("build/styles-release").filter(f => f !== "build/styles-release" &&
@@ -69,7 +76,7 @@ let stylesdiff = exec("diff -qr build/styles-snapshot/ build/styles-release/").c
 if (RELEASE || stylesdiff !== 0 || firstDayOfMonth) {
   console.log("Publishing new styles ...")
   cp("build-styles-template.gradle", "build/styles-release/build.gradle")
-  touch("build/styles-release/settings.gradle")
+  fs.writeFileSync("build/styles-release/settings.gradle", "rootProject.name = 'styles'")
   if (exec(`${GRADLE_EXECUTABLE} publishToSonatype closeAndReleaseSonatypeStagingRepository`, { cwd: "build/styles-release" }).code !== 0) {
     exit(1)
   }
@@ -82,7 +89,7 @@ let localesdiff = exec("diff -qr build/locales-snapshot/ build/locales-release/"
 if (RELEASE || localesdiff !== 0 || firstDayOfMonth) {
   console.log("Publishing new locales ...")
   cp("build-locales-template.gradle", "build/locales-release/build.gradle")
-  touch("build/locales-release/settings.gradle")
+  fs.writeFileSync("build/locales-release/settings.gradle", "rootProject.name = 'locales'")
   if (exec(`${GRADLE_EXECUTABLE} publishToSonatype closeAndReleaseSonatypeStagingRepository`, { cwd: "build/locales-release" }).code !== 0) {
     exit(1)
   }
